@@ -40,17 +40,38 @@ class DemoGraphqlApplicationTests {
     }
 
     @Test
-    void executeGraphQL_WhenTypical() {
+    void executeGraphQL_WhenBookById() {
         String request = "{\n" +
                 "\"query\": \"{bookById(id: \\\"book-1\\\"){id name pageCount author { firstName lastName } }}\"\n" +
                 "}";
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Content-Type", "application/json");
-        HttpEntity<String> httpEntity = new HttpEntity<>(request, headers);
-        String response = testRestTemplate.postForObject("http://localhost:" + port + "/graphql", httpEntity, String.class);
-        LOGGER.info("the response {}", response);
+        String response = makeCall(request);
         assertTrue(response.contains("book-1"));
         assertTrue(response.contains("Rowling"));
+    }
+
+    @Test
+    void executeGraphQL_WhenAuthorLastName() {
+        String request = "{\"query\": \"{authorByLastName(lastName: \\\"Rowling\\\") {lastName firstName}}\"}";
+        String response = makeCall(request);
+        assertTrue(response.contains("Rowling"));
+    }
+
+    @Test
+    void executeGraphQL_WhenAuthors() {
+        String request = "{\"query\": \"{authors{lastName firstName}}\"}";
+        String response = makeCall(request);
+        assertTrue(response.contains("Rowling"));
+        assertTrue(response.contains("Rice"));
+        assertTrue(response.contains("Melville"));
+    }
+
+    @Test
+    void executeGraphQL_WhenBooks() {
+        String request = "{\"query\": \"{books {name pageCount}}\"}";
+        String response = makeCall(request);
+        assertTrue(response.contains("Potter"));
+        assertTrue(response.contains("Moby"));
+        assertTrue(response.contains("Interview"));
     }
 
     @Test
@@ -63,6 +84,15 @@ class DemoGraphqlApplicationTests {
     void bookRepository_WhenTypical() {
         List<Book> books = bookRepository.findAll();
         assertTrue(books.size() == 3);
+    }
+
+    private String makeCall(String request) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.add("Content-Type", "application/json");
+        HttpEntity<String> httpEntity = new HttpEntity<>(request, headers);
+        String response = testRestTemplate.postForObject("http://localhost:" + port + "/graphql", httpEntity, String.class);
+        LOGGER.info("the response {}", response);
+        return response;
     }
 
 }

@@ -4,7 +4,10 @@ import com.google.common.base.Charsets;
 import com.google.common.io.Resources;
 import graphql.GraphQL;
 import graphql.schema.GraphQLSchema;
-import graphql.schema.idl.*;
+import graphql.schema.idl.RuntimeWiring;
+import graphql.schema.idl.SchemaGenerator;
+import graphql.schema.idl.SchemaParser;
+import graphql.schema.idl.TypeDefinitionRegistry;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
@@ -43,9 +46,12 @@ public class GraphQLProvider {
 
     private RuntimeWiring buildWiring() {
         return RuntimeWiring.newRuntimeWiring()
-                .type(TypeRuntimeWiring.newTypeWiring("Query")
-                        .dataFetcher("bookById", graphQLDataFetchers.getBookByIdDataFetcher()))
-                .type(TypeRuntimeWiring.newTypeWiring("Book")
+                .type("Query", typeWiring -> typeWiring
+                        .dataFetcher("bookById", graphQLDataFetchers.getBookByIdDataFetcher())
+                        .dataFetcher("authorByLastName", graphQLDataFetchers.getAuthorByLastName())
+                        .dataFetcher("authors", graphQLDataFetchers.getAuthors())
+                        .dataFetcher("books", graphQLDataFetchers.getBooks()))
+                .type("Book", typeWiring -> typeWiring
                         .dataFetcher("author", graphQLDataFetchers.getAuthorDataFetcher()))
                 .build();
 

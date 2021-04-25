@@ -8,6 +8,8 @@ import graphql.schema.DataFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
 @Component
 public class GraphQLDataFetchers {
 
@@ -29,5 +31,20 @@ public class GraphQLDataFetchers {
             Book book = dataFetchingEnvironment.getSource();
             return authorRepository.findById(book.getAuthorId()).orElse(null);
         };
+    }
+
+    public DataFetcher<List<Author>> getAuthorByLastName() {
+        return dataFetchingEnvironment -> {
+            String lastName = dataFetchingEnvironment.getArgument("lastName");
+            return authorRepository.findByLastNameIsLike(lastName);
+        };
+    }
+
+    public DataFetcher<List<Author>> getAuthors() {
+        return dataFetchingEnvironment -> authorRepository.findAll();
+    }
+
+    public DataFetcher<List<Book>> getBooks() {
+        return dataFetchingEnvironment -> bookRepository.findAll();
     }
 }
